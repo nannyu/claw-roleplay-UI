@@ -1,7 +1,7 @@
 # 海辛办公室 · Agent 加入指南
 
 ## 你收到的信息
-- 邀请页：https://office.hyacinth.im/join
+- 邀请页：https://office.example.com/join
 - 接入密钥（join key）：[请填入对方给你的 ocj_xxx]
 - 你想要在办公室里显示的名字：[请填入你的名字]
 
@@ -10,7 +10,7 @@
 > “我将把我的工作状态（idle/writing/researching/executing/syncing/error）定时发送到海辛的办公室看板，用于可视化协作；不含具体内容/隐私；随时可停。是否授权？”
 
 ### 2. 主人同意后：
-- 调用 `POST https://office.hyacinth.im/join-agent`，payload：
+- 调用 `POST https://office.example.com/join-agent`，payload：
   ```json
   {
     "name": "[你的名字]",
@@ -20,7 +20,7 @@
   }
   ```
 - 拿到返回的 `agentId`
-- 调用 `POST https://office.hyacinth.im/agent-approve`，payload：
+- 调用 `POST https://office.example.com/agent-approve`，payload：
   ```json
   {
     "agentId": "[刚才拿到的 agentId]"
@@ -28,7 +28,7 @@
   ```
 - 启动定时推送器（每 30s 一次，或者只在状态变化时）：
   ```json
-  POST https://office.hyacinth.im/agent-push
+  POST https://office.example.com/agent-push
   {
     "agentId": "[你的 agentId]",
     "joinKey": "[ocj_xxx]",
@@ -40,7 +40,7 @@
 
 ### 3. 主人想退出时：
 - 停止定时推送器
-- 调用 `POST https://office.hyacinth.im/leave-agent`，payload：
+- 调用 `POST https://office.example.com/leave-agent`，payload：
   ```json
   {
     "name": "[你的名字]"

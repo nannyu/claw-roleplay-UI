@@ -1,86 +1,147 @@
 ---
 name: star-office-ui
-description: 多 Agent 像素办公室看板：可视化状态、远端加入、昨日小记展示。用于部署、联调、接入与开源发布。
+description: Star Office UI 使用手册：多 Agent 像素办公室部署、状态接入、移动端查看、公网发布与安全边界。
 ---
 
 # Star Office UI Skill
 
-## 目标
-
-把 OpenClaw / AI 助手的协作状态可视化为“像素办公室”中的动态角色，支持：
-
-1. 主 Agent 状态展示（idle / writing / researching / executing / syncing / error）
-2. 多 Agent 远端加入与实时同步
-3. 昨日小记展示（从 `memory/*.md` 提取）
+本 Skill 面向两类用户：
+1) 想快速跑起可视化办公室的人
+2) 想让自己的 OpenClaw（龙虾）加入协作看板的人
 
 ---
 
-## 核心能力
+## 1. 你能做什么
 
-### A. 状态可视化
-- 状态归一化：`working -> writing`，`sync -> syncing` 等
-- 区域映射：
-  - `idle -> breakroom`
-  - `writing/researching/executing/syncing -> writing`
-  - `error -> error`
-- UI 动画：主角色 + 访客角色 + 状态气泡
-
-### B. 多 Agent 协作
-- `POST /join-agent`：加入办公室（基于 join key）
-- `POST /agent-push`：持续推送状态
-- `GET /agents`：前端拉取并渲染
-- `POST /leave-agent`：离开与回收
-
-### C. 昨日小记
-- `GET /yesterday-memo` 从 `memory/` 中找昨日/最近日记
-- 对展示文本做基础隐私清理（路径、ID、邮箱、IP 等）
+- 在办公室里可视化主 Agent 状态（工作 / 闲置 / 同步 / 报错）
+- 邀请其他 Agent 加入并实时显示状态
+- 在 UI 展示“昨日小记”微型总结
+- 在手机端查看办公室动态
+- 用 Cloudflare Tunnel 或你自己的公网地址对外访问
 
 ---
 
-## 目录与关键文件
+## 2. 状态规范（建议统一）
 
-- 后端：`backend/app.py`
-- 前端：`frontend/index.html`、`frontend/layout.js`
-- 主状态：`state.json`（运行时）
-- 多 Agent 状态：`agents-state.json`（运行时）
-- join key：`join-keys.json`
-- 主状态切换：`set_state.py`
-- 远端推送：`office-agent-push.py`
+支持状态：
+- `idle`
+- `writing`
+- `researching`
+- `executing`
+- `syncing`
+- `error`
 
----
-
-## 快速联调流程（10 分钟）
-
-1. 启动服务：
-   - `python3 -m pip install -r backend/requirements.txt`
-   - `cd backend && python3 app.py`
-2. 浏览器打开 `/`，确认 UI 可见
-3. 本地切状态：`python3 set_state.py writing "联调中"`
-4. 远端执行 join + push，确认访客进入工作区
-5. 访问 `/yesterday-memo`，确认能返回摘要
+区域映射：
+- `idle -> breakroom`
+- `writing/researching/executing/syncing -> writing`
+- `error -> error`
 
 ---
 
-## 常见问题
+## 3. 本地快速启动
 
-### 1) 访客一直在休息区
-- 远端推送是否持续是 `idle`
-- 远端是否读取错了状态源
-- `/agent-push` 是否返回成功
+```bash
+cd star-office-ui
+python3 -m pip install -r backend/requirements.txt
+cp state.sample.json state.json
+cd backend && python3 app.py
+```
 
-### 2) join 失败（403 / 429）
+打开：`http://127.0.0.1:18791`
+
+切状态示例：
+```bash
+python3 set_state.py writing "工作中"
+python3 set_state.py idle "待命"
+```
+
+---
+
+## 4. 邀请访客（其他龙虾）加入
+
+### 步骤 A：join
+调用 `POST /join-agent`，提交：
+- `name`
+- `joinKey`
+- `state`（可选，默认 idle）
+- `detail`（可选）
+
+成功后会返回 `agentId`。
+
+### 步骤 B：push
+定时调用 `POST /agent-push`，提交：
+- `agentId`
+- `joinKey`
+- `state`
+- `detail`（可选）
+
+建议 10~20 秒推一次。
+
+### 步骤 C：leave（可选）
+调用 `POST /leave-agent` 离开房间。
+
+---
+
+## 5. 昨日小记说明
+
+- 接口：`GET /yesterday-memo`
+- 数据来源：工作区上级目录的 `memory/*.md`
+- 行为：优先读取“昨天”；若没有则回退最近可用日期
+- 会做基础隐私清理（ID / 路径 / 邮箱 / IP）
+
+---
+
+## 6. 公网访问建议
+
+### 推荐：Cloudflare Tunnel
+优点：快、便捷、无需改路由。
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:18791
+```
+
+### 也可以使用你自己的公网方案
+例如：
+- Nginx/Caddy 反向代理
+- 自有域名 + HTTPS
+- 任何你熟悉的公网入口
+
+> 注意：请勿在仓库中硬编码私有域名。
+
+---
+
+## 7. 常见问题
+
+### Q1：访客一直在休息区
+- 远端是否一直 push `idle`
+- 是否读取错状态源文件
+- `/agent-push` 是否成功返回
+
+### Q2：join 报 403 / 429
 - 403：join key 无效或不匹配
 - 429：同 key 并发达到上限（默认 3）
 
-### 3) 之前在线的 Agent 突然掉线
-- 超过 5 分钟无推送会被标记 `offline`
-- 恢复推送可自动回到 `approved`
+### Q3：状态文件删了怎么办
+- `state.json` / `agents-state.json` 是运行态文件
+- 可由脚本运行时自动生成，或从 `state.sample.json` 复制
+- 这类文件不建议提交到 GitHub
 
 ---
 
-## 开源发布注意事项
+## 8. 开源与版权边界（必须遵守）
 
-- 不提交运行时文件：`state.json`、`agents-state.json`、`*.log`、`*.out`、`*.pid`
-- 不提交本地环境与缓存：`.venv/`、`__pycache__/`
-- README 需写清楚素材版权与非商用限制
-- 对外默认使用示例配置（`state.sample.json`）
+- 代码逻辑：MIT
+- 美术资产：仅学习/演示用途，禁止商用
+- 访客角色资产来源：LimeZu
+  - https://limezu.itch.io/animated-mini-characters-2-platform-free
+- 若要商用，请替换成你自己的美术资产
+
+---
+
+## 9. 给贡献者的建议
+
+如果你想做二次开发，推荐优先从这几块下手：
+- 更强的权限模型（管理员/访客分级）
+- 多房间与团队组织
+- 状态事件回放与日报自动生成
+- 更标准的 API 文档与 SDK
