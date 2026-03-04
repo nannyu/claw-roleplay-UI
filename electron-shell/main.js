@@ -3,7 +3,7 @@ const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const net = require("net");
-const APP_NAME = "Star Desktop Pet";
+const APP_NAME = "Star Office UI";
 
 let mainWindow = null;
 let miniWindow = null;
@@ -317,7 +317,7 @@ function createWindows(projectRoot) {
       nodeIntegration: false,
     },
   });
-  miniWindow.setTitle("Star Mini");
+  miniWindow.setTitle("Star Office UI Mini");
 
   const v = Date.now();
   const mainUrl = `http://127.0.0.1:18791/electron-standalone?desktop=1&v=${v}`;

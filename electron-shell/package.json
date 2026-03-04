@@ -1,6 +1,6 @@
 {
-  "name": "star-desktop-pet-shell",
-  "productName": "Star Desktop Pet",
+  "name": "star-office-ui",
+  "productName": "Star Office UI",
   "private": true,
   "version": "0.1.0",
   "main": "main.js",
