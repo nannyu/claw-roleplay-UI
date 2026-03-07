@@ -1,6 +1,6 @@
 # Star Office UI
 
-🌐 Language: [中文](./README.md) | [English](./README.en.md) | **日本語**
+🌐 Language: [中文](./README.zh.md) | [English](./README.md) | **日本語**
 
 ![Star Office UI カバー](docs/screenshots/readme-cover-2.jpg)
 
