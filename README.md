@@ -84,7 +84,7 @@ python3 set_state.py idle "待命中"
 7. **移动端适配** —— 手机直接打开即可查看，适合外出时快速瞄一眼
 8. **安全加固** —— 侧边栏密码保护、生产环境弱密码拦截、Session Cookie 加固
 9. **灵活公网访问** —— 推荐 Cloudflare Tunnel 一键公网化，也可用自有域名 / 反向代理
-10. **桌面宠物版** —— 可选的 Tauri 桌面封装，把办公室变成透明窗口的桌面宠物（见下方说明）
+10. **桌面宠物版** —— 可选的 Electron 桌面封装，把办公室变成透明窗口的桌面宠物（见下方说明）
 
 ---
 
@@ -216,7 +216,7 @@ python3 office-agent-push.py
 
 ## 🖥 桌面宠物版（可选）
 
-`desktop-pet/` 目录提供了一个基于 **Tauri** 的桌面封装版本，可以把像素办公室变成一个透明窗口的桌面宠物。
+`desktop-pet/` 目录提供了一个基于 **Electron** 的桌面封装版本，可以把像素办公室变成一个透明窗口的桌面宠物。
 
 ```bash
 cd desktop-pet
@@ -277,7 +277,7 @@ Star-Office-UI/
 │   ├── join.html
 │   ├── invite.html
 │   └── layout.js
-├── desktop-pet/        # Tauri 桌面宠物版（可选）
+├── desktop-pet/        # Electron 桌面宠物版（可选）
 ├── docs/               # 文档与截图
 │   └── screenshots/
 ├── office-agent-push.py  # 访客推送脚本
